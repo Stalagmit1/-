@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do App - Управление задачами</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f9fafb;
+      color: #1f2937;
+    }
+    .task-item {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .task-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    .filter-btn.active {
+      background-color: #3b82f6;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <header class="py-16 bg-gradient-to-b from-blue-100 to-white text-center">
+    <div class="container mx-auto px-4">
+      <h1 class="text-4xl font-bold text-blue-600 mb-4" data-aos="fade-down">To-Do App</h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto" data-aos="fade-up">Интерактивное приложение для управления задачами, построенное на React.</p>
+    </div>
+  </header>
+  <section class="py-16">
+    <div class="container mx-auto px-4">
+      <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg" data-aos="fade-up">
+        <div id="root"></div>
+      </div>
+    </section>
+  <footer class="py-8 bg-gray-800 text-center text-gray-300">
+    <div class="container mx-auto px-4">
+      <p class="mb-4">Создано Ивановым Глебом | <a href="mailto:your-email@example.com" class="text-blue-400 hover:underline">Связаться</a></p>
+      <div class="flex justify-center space-x-4">
+        <a href="https://github.com/your-username" class="text-blue-400 hover:text-blue-600"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg></a>
+        <a href="https://linkedin.com/in/your-username" class="text-blue-400 hover:text-blue-600"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 14v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg></a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script type="text/babel">
+    AOS.init();
+
+    function App() {
+      const [tasks, setTasks] = React.useState([]);
+      const [input, setInput] = React.useState('');
+      const [filter, setFilter] = React.useState('all');
+      React.useEffect(() => {
+        const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        setTasks(savedTasks);
+      }, []);
+      React.useEffect(() => {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+      }, [tasks]);
+
+      const addTask = () => {
+        if (input.trim()) {
+          setTasks([...tasks, { id: Date.now(), text: input, completed: false }]);
+          setInput('');
+        }
+      };
+
+      const toggleTask = (id) => {
+        setTasks(tasks.map(task =>
+          task.id === id ? { ...task, completed: !task.completed } : task
+        ));
+      };
+
+      const deleteTask = (id) => {
+        setTasks(tasks.filter(task => task.id !== id));
+      };
+
+      const filteredTasks = tasks.filter(task => {
+        if (filter === 'active') return !task.completed;
+        if (filter === 'completed') return task.completed;
+        return true;
+      });
+
+      return (
+        <div>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Управление задачами</h2>
+          <div className="flex gap-2 mb-4">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Введите задачу"
+              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600"
+            />
+            <button
+              onClick={addTask}
+              className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition"
+            >
+              Добавить
+            </button>
+          </div>
+          <div className="flex justify-center gap-2 mb-4">
+            <button
+              onClick={() => setFilter('all')}
+              className={`filter-btn px-4 py-2 rounded-lg bg-blue-200 text-blue-800 ${filter === 'all' ? 'active' : ''}`}
+            >
+              Все
+            </button>
+            <button
+              onClick={() => setFilter('active')}
+              className={`filter-btn px-4 py-2 rounded-lg bg-blue-200 text-blue-800 ${filter === 'active' ? 'active' : ''}`}
+            >
+              Активные
+            </button>
+            <button
+              onClick={() => setFilter('completed')}
+              className={`filter-btn px-4 py-2 rounded-lg bg-blue-200 text-blue-800 ${filter === 'completed' ? 'active' : ''}`}
+            >
+              Выполненные
+            </button>
+          </div>
+          <ul className="space-y-2">
+            {filteredTasks.map(task => (
+              <li
+                key={task.id}
+                className="task-item flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                data-aos="fade-up"
+              >
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={task.completed}
+                    onChange={() => toggleTask(task.id)}
+                    className="h-5 w-5 text-blue-600"
+                  />
+                  <span className={task.completed ? 'line-through text-gray-500' : ''}>
+                    {task.text}
+                  </span>
+                </div>
+                <button
+                  onClick={() => deleteTask(task.id)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    }
+
+    // Updated for React 18
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
